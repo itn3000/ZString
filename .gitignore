@@ -117,3 +117,5 @@ nuget/tools/*
 # Unity
 Library/
 Temp/
+
+BenchmarkDotNet.Artifacts/
