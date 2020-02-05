@@ -25,10 +25,10 @@ using System;
 
 namespace Cysharp.Text
 {
-    public ref partial struct Utf16ValueStringBuilder
+    public partial struct Utf16ValueStringBuilder
     {
 <# for(var i = 1; i <= 16; i++) { #>
-        public void AppendFormat<<#= CreateTypeArgument(i) #>>(ReadOnlySpan<char> format, <#= CreateParameters(i) #>)
+        public void AppendFormat<<#= CreateTypeArgument(i) #>>(string format, <#= CreateParameters(i) #>)
         {
             var copyFrom = 0;
             for (int i = 0; i < format.Length; i++)
@@ -45,7 +45,7 @@ namespace Cysharp.Text
                     {
                         var size = i - copyFrom;
                         TryGrow(size);
-                        format.Slice(copyFrom, size).CopyTo(buffer.AsSpan(index));
+                        format.AsSpan(copyFrom, size).CopyTo(buffer.AsSpan(index));
                         index += size;
                         i = i + 1; // skip escaped '{'
                         copyFrom = i;
@@ -55,12 +55,12 @@ namespace Cysharp.Text
                     {
                         var size = i - copyFrom;
                         TryGrow(size);
-                        format.Slice(copyFrom, size).CopyTo(buffer.AsSpan(index));
+                        format.AsSpan(copyFrom, size).CopyTo(buffer.AsSpan(index));
                         index += size;
                     }
 
                     // try to find range
-                    var indexParse = FormatParser.Parse(format.Slice(i));
+                    var indexParse = FormatParser.Parse(format.AsSpan(i));
                     copyFrom = i + indexParse.LastIndex + 1;
                     i = i + indexParse.LastIndex;
                     switch (indexParse.Index)
@@ -87,6 +87,19 @@ namespace Cysharp.Text
 
                     ThrowFormatException();
                 }
+                else if (format[i] == '}')
+                {
+                    if (i != format.Length && format[i + 1] == '}')
+                    {
+                        var size = i - copyFrom;
+                        TryGrow(size);
+                        format.AsSpan(copyFrom, size).CopyTo(buffer.AsSpan(index));
+                        index += size;
+                        i = i + 1; // skip escaped '}'
+                        copyFrom = i;
+                        continue;
+                    }
+                }
 
                 NEXT_LOOP:
                 continue;
@@ -98,13 +111,13 @@ namespace Cysharp.Text
                 if (copyLength > 0)
                 {
                     TryGrow(copyLength);
-                    format.Slice(copyFrom, copyLength).CopyTo(buffer.AsSpan(index));
+                    format.AsSpan(copyFrom, copyLength).CopyTo(buffer.AsSpan(index));
                     index += copyLength;
                 }
             }
         }
 
-        public void AppendFormatLine<<#= CreateTypeArgument(i) #>>(ReadOnlySpan<char> format, <#= CreateParameters(i) #>)
+        public void AppendFormatLine<<#= CreateTypeArgument(i) #>>(string format, <#= CreateParameters(i) #>)
         {
             AppendFormat(format, <#= CreateParameterNames(i) #>);
             AppendNewLine();
