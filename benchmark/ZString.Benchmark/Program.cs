@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 
@@ -8,7 +8,7 @@ namespace ZString.Benchmark
     {
         static void Main(string[] args)
         {
-            new BenchmarkSwitcher(typeof(Program).Assembly).Run();
+            new BenchmarkSwitcher(typeof(Program).Assembly).Run(args);
         }
     }
 }
